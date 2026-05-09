@@ -1,115 +1,234 @@
-# MedAuth AI — Generative UI Hackathon Demo
+# MedAuth AI — Generative UI Hackathon
 
-> **AI-powered prior authorization** — one natural language input generates completely different, interactive PA forms for every payer/drug combination. Proving Generative UI is the only way to solve this problem.
+> **AI-powered prior authorization** — one natural language input generates completely different, interactive PA forms for every payer/drug combination, streamed live via AG-UI protocol.
 
 ---
 
-## 🚀 Quick Start (2 commands)
+## 🚀 Quick Start
 
-### 1. Start the Backend (FastAPI + LangGraph Agent)
+### 1. Start the Backend (FastAPI + LangGraph + Gemini)
 
 ```bash
 cd backend
-
-# Add your OpenAI key
-echo "OPENAI_API_KEY=sk-your-key-here" > .env
-
-# Install deps (or use existing venv)
+echo "GOOGLE_API_KEY=your_key_here" > .env
 pip install -r requirements.txt
-
-# Start
 python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Backend runs at: http://localhost:8000
-API docs at: http://localhost:8000/docs
+Backend: http://localhost:8000 · API docs: http://localhost:8000/docs
 
-### 2. Start the Frontend (React + Vite)
+### 2. Start the Frontend (React + Vite + CopilotKit)
 
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
 
-Frontend runs at: http://localhost:5173
+Frontend: http://localhost:5173
 
 ---
 
-## 🎬 Demo Script (3 inputs → 3 completely different UIs)
+## 🎬 Demo Script — 3 Inputs → 3 Completely Different UIs
 
 **Demo 1 — Blue Cross IL + Humira:**
 ```
 Requesting Humira for John Doe, 45M, Crohn's disease, failed methotrexate and 6-MP, Blue Cross IL
 ```
-→ **Blue gradient header** • 6 sections • Step therapy documentation • TB screening checklist • 3 required docs
+→ **Blue** header · 6 sections · Step therapy proof · TB screening checklist · 4 required docs
 
 **Demo 2 — Aetna + Humira:**
 ```
 Humira for Jane Smith, 38F, Crohn's disease, failed methotrexate, Aetna insurance
 ```
-→ **Purple gradient header** • Gastroenterologist attestation section (Aetna-specific) • Board cert required • Lab results required • 6 docs required
+→ **Purple** header · Gastroenterologist attestation section (Aetna-exclusive) · Board cert · Lab results · 6 docs
 
 **Demo 3 — UnitedHealth + Keytruda:**
 ```
 Keytruda for Robert Chen, 62M, Stage 3 non-small cell lung cancer, PD-L1 positive, UnitedHealth
 ```
-→ **Orange gradient header** • Oncology flow • Biomarker testing panel (PD-L1, EGFR, ALK, KRAS) • Tumor board review section • Performance status • 6 documents
+→ **Orange** header · Oncology flow · PD-L1/EGFR/ALK biomarker panel · Tumor board review · 6 docs
 
-**Same drug, different payer = totally different app. That's Generative UI.**
+**Same drug. Same diagnosis. Three completely different applications rendered live. That's Generative UI.**
+
+---
+
+## 🧠 How AG-UI + CopilotKit Work Here
+
+### The AG-UI Streaming Flow
+
+```
+Doctor types clinical input
+        │
+        ▼
+runAgent(input)                     ← useAgentUI hook (React)
+        │
+        ▼
+POST /copilotkit                    ← CopilotKit SSE channel opens
+        │
+        ▼
+LangGraph Pipeline (FastAPI backend)
+┌──────────────────────────────────────────────────────────────────┐
+│ ck_parse_node     → copilotkit_emit_state("parsing")            │ ──→ SSE → agentState updates live
+│ ck_payer_node     → copilotkit_emit_state("payer_ready")        │ ──→ SSE → loading step animates
+│ ck_drug_node      → copilotkit_emit_state("drug_ready")         │ ──→ SSE → loading step animates
+│ ck_ui_generator   → copilotkit_emit_state("ui_ready", schema)   │ ──→ SSE → FORM MATERIALIZES
+└──────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+useCoAgentStateRender fires         ← receives each SSE emit in real-time
+onFormReady(agentState)
+        │
+        ▼
+PAFormRenderer renders              ← completely different UI per payer/drug
+```
+
+### The Three CopilotKit Hooks
+
+| Hook | File | What it does |
+|------|------|-------------|
+| `useCoAgent("medauth_agent")` | `useAgentUI.ts` | Two-way state sync — mirrors LangGraph state in React in real-time via AG-UI SSE |
+| `useCoAgentStateRender()` | `useAgentUI.ts` | Fires on every `copilotkit_emit_state()` call — drives live loading step animation and triggers form render |
+| `useCopilotAction("updateAgentState")` | `useAgentUI.ts` | Registers a frontend action the agent/chat can call to update form fields mid-flow |
+
+### Backend: `copilotkit_agent.py`
+
+Each LangGraph node is wrapped to emit state at each step:
+
+```python
+# Every node emits progress via AG-UI Server-Sent Events
+async def ck_parse_node(state: MedAuthCopilotState):
+    await copilotkit_emit_state(state, {"agent_step": "parsing"})       # → React sees this immediately
+    result = await parse_clinical_input_node(state)
+    await copilotkit_emit_state(state, {                                  # → React sees parsed data
+        "agent_step": "parsed",
+        "parsed_clinical": result.get("parsed_clinical"),
+    })
+    return result
+
+async def ck_ui_generator_node(state: MedAuthCopilotState):
+    await copilotkit_emit_state(state, {"agent_step": "generating_ui"})
+    result = await ui_schema_generator_node(state)
+    await copilotkit_emit_state(state, {                                  # → React renders the form
+        "agent_step": "ui_ready",
+        "ui_schema": result.get("ui_schema"),                             #   THIS is Generative UI
+    })
+    await copilotkit_exit(state)                                          # → stream ends cleanly
+    return result
+```
+
+`MedAuthCopilotState` extends `CopilotKitState` which adds:
+- `messages` — LangChain chat message history (for the sidebar chat)
+- `copilotkit` — internal CopilotKit config (actions registry, emit helpers)
+
+### Frontend: `main.tsx` — The Entry Point
+
+```tsx
+// <CopilotKit> opens the AG-UI SSE connection to /copilotkit
+// Every useCoAgent / useCoAgentStateRender hook inside the tree
+// receives real-time state updates from the LangGraph agent
+<CopilotKit runtimeUrl="/copilotkit" agent="medauth_agent">
+  <App />
+</CopilotKit>
+```
+
+### Frontend: `useAgentUI.ts` — The AG-UI Hook
+
+```typescript
+// Two-way state sync with the LangGraph agent
+const { state: agentState, run, stop } = useCoAgent<AgentState>({
+  name: 'medauth_agent',  // must match LangGraphAgent name in main.py
+})
+
+// Fires on EVERY copilotkit_emit_state() call from the backend
+useCoAgentStateRender({
+  name: 'medauth_agent',
+  render: ({ state }) => {
+    if (state?.agent_step === 'ui_ready' && state?.ui_schema) {
+      onFormReady(state)   // → App transitions to form view
+    }
+    return null
+  },
+})
+
+// Frontend action the agent/chat can call to update form fields
+useCopilotAction({
+  name: 'updateAgentState',
+  handler: ({ field, value }) => {
+    setAgentState({ ...agentState, [field]: value })
+  },
+})
+```
+
+### Backend: `main.py` — The CopilotKit Endpoint
+
+```python
+# /copilotkit endpoint = the AG-UI SSE connection point
+sdk = CopilotKitSDK(agents=[
+    LangGraphAgent(
+        name="medauth_agent",            # matched by useCoAgent("medauth_agent")
+        description="Prior auth AI...",
+        graph=get_copilotkit_graph(),    # the CopilotKit-aware LangGraph
+    )
+])
+add_fastapi_endpoint(app, sdk, "/copilotkit")
+```
+
+### The CopilotKit Chat Sidebar
+
+The **"AI Assistant"** button opens `<CopilotSidebar>` — a conversational interface to the same agent. Doctors can say:
+- *"Change the payer to Aetna"* → `updateAgentState()` fires → form updates
+- *"The patient also failed azathioprine"* → agent can re-analyze
+- *"Generate the appeal letter"* → triggers the appeal flow
+
+All through the same `/copilotkit` SSE channel — the chat **is** the agent stream made visible.
+
+### Why This Needs Generative UI
+
+Every payer × drug combination is a completely different form:
+
+| Combination | Unique Requirements |
+|-------------|---------------------|
+| Humira + Blue Cross IL | Step therapy proof, TB test date, endoscopy report |
+| Humira + Aetna | All of above + **gastroenterologist attestation** + board cert number + 6-month clinical notes |
+| Keytruda + UnitedHealth | Completely different — PD-L1 TPS score, EGFR/ALK/ROS1 status, **tumor board meeting minutes**, ECOG performance status |
+
+A static form can't handle this. The agent reads the clinical context and **generates the exact right form** as a streamed UI schema.
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-Doctor Input (natural language)
-        ↓
-FastAPI /api/pa/analyze
-        ↓
-LangGraph Agent Pipeline:
-  [Parse Node]     → GPT-4o extracts: patient, drug, payer, clinical history
-  [Payer Lookup]   → fetches payer-specific PA requirements from mock_data/payers.json
-  [Drug Criteria]  → fetches step therapy requirements from mock_data/drugs.json
-  [UI Generator]   → GPT-4o maps clinical context → form schema + pre-filled values
-        ↓
-React Frontend:
-  PAFormRenderer   → reads schema, renders correct sections/fields dynamically
-  ClinicalCriteriaCard → AI analysis: met criteria, missing info, approval likelihood
-  DocUploadSlots   → payer/drug-specific document requirements
-  StatusDashboard  → submitted → pending → approved/denied
-  AppealWorkflow   → AI-written appeal letter on denial
-```
-
----
-
-## 📁 Project Structure
-
-```
 medauth-ai/
-├── frontend/
-│   └── src/
-│       ├── components/
-│       │   ├── DoctorInput.tsx         ← Natural language input + demo prompts
-│       │   ├── PAFormRenderer.tsx      ← Dynamic form from agent schema
-│       │   ├── ClinicalCriteriaCard.tsx← AI approval analysis
-│       │   ├── DocUploadSlots.tsx      ← Payer-specific doc requirements
-│       │   ├── StatusDashboard.tsx     ← PA status tracker
-│       │   └── AppealWorkflow.tsx      ← Denial → AI appeal letter
-│       ├── lib/
-│       │   ├── api.ts                  ← Typed API client
-│       │   └── utils.ts                ← Tailwind merge
-│       └── App.tsx                     ← Main app state machine
+├── backend/
+│   ├── main.py                      ← FastAPI: REST endpoints + /copilotkit AG-UI endpoint
+│   ├── agent/
+│   │   ├── copilotkit_agent.py      ← LangGraph nodes with copilotkit_emit_state() streaming
+│   │   ├── graph.py                 ← Standard LangGraph pipeline (REST fallback)
+│   │   ├── nodes.py                 ← Parse → Payer → Drug → UI Schema → Appeal nodes
+│   │   └── prompts.py               ← Gemini 2.0 Flash prompts
+│   └── mock_data/
+│       ├── payers.json              ← BlueCross IL, Aetna, UnitedHealth PA requirements
+│       ├── drugs.json               ← Humira, Keytruda, Ozempic, Dupixent, Enbrel criteria
+│       └── pa_schemas.json          ← Full form schemas keyed by payer__drug
 │
-└── backend/
-    ├── agent/
-    │   ├── graph.py                    ← LangGraph StateGraph pipeline
-    │   ├── nodes.py                    ← 5 agent nodes
-    │   └── prompts.py                  ← GPT-4o prompts
-    ├── mock_data/
-    │   ├── payers.json                 ← 3 payers with PA requirements
-    │   ├── drugs.json                  ← 5 drugs with step therapy criteria
-    │   └── pa_schemas.json             ← Form schemas keyed by payer__drug
-    └── main.py                         ← FastAPI endpoints
+└── frontend/
+    └── src/
+        ├── main.tsx                 ← <CopilotKit runtimeUrl="/copilotkit"> wraps app
+        ├── App.tsx                  ← State machine + live AG-UI step labels + CopilotSidebar
+        ├── hooks/
+        │   └── useAgentUI.ts        ← useCoAgent + useCoAgentStateRender + useCopilotAction
+        ├── lib/
+        │   ├── api.ts               ← Typed REST client (fallback when CopilotKit unavailable)
+        │   └── utils.ts             ← Tailwind merge
+        └── components/
+            ├── DoctorInput.tsx      ← Natural language input + demo prompts
+            ├── PAFormRenderer.tsx   ← Renders agent-generated form schema dynamically
+            ├── ClinicalCriteriaCard.tsx ← AI approval analysis (met criteria, missing info)
+            ├── DocUploadSlots.tsx   ← Payer-specific document upload requirements
+            ├── StatusDashboard.tsx  ← PA status tracker (pending → approved/denied)
+            └── AppealWorkflow.tsx   ← Denial → AI appeal letter generation
 ```
 
 ---
@@ -118,40 +237,24 @@ medauth-ai/
 
 **Backend** (`backend/.env`):
 ```
-OPENAI_API_KEY=sk-...
+GOOGLE_API_KEY=your_google_ai_studio_key
 ```
-
-**Frontend** (`frontend/.env`) — optional, defaults use Vite proxy:
-```
-VITE_COPILOTKIT_API_URL=http://localhost:8000/copilotkit
-```
+> Get a free key at https://aistudio.google.com/apikey
+> The app runs in **demo mode** (rule-based fallback) if quota is exceeded — all 3 payer forms still work.
 
 ---
 
-## 📦 Key Dependencies
+## 📦 Tech Stack
 
-| Layer | Package | Purpose |
-|-------|---------|---------|
-| Frontend | React 18 + Vite | App framework |
-| Frontend | Tailwind CSS v4 | Styling |
-| Frontend | Framer Motion | UI animations during form generation |
-| Frontend | React Hook Form + Zod | Dynamic form handling |
-| Frontend | Lucide React | Icons |
+| Layer | Technology | Role |
+|-------|-----------|------|
+| Frontend | React 18 + Vite + TypeScript | App framework |
+| Styling | Tailwind CSS v4 | Utility-first styling |
+| Animation | Framer Motion | Form materialization transitions |
+| Agent UI | **CopilotKit** (`useCoAgent`, `useCoAgentStateRender`, `useCopilotAction`) | AG-UI streaming + chat sidebar |
+| Transport | **AG-UI Protocol** (via CopilotKit SSE) | Real-time agent → UI event streaming |
+| Forms | React Hook Form | Dynamic form handling |
 | Backend | FastAPI + Uvicorn | API server |
-| Backend | LangGraph | Agent pipeline orchestration |
-| Backend | LangChain OpenAI | GPT-4o integration |
-| Backend | Python-dotenv | Environment config |
-
----
-
-## 💡 Why Generative UI Wins Here
-
-Static apps can't handle this:
-- **BlueCross IL** requires TB test date + step therapy proof + endoscopy report
-- **Aetna** requires gastroenterologist attestation + board cert + 6-month clinical notes
-- **UnitedHealth Keytruda** requires PD-L1 score + EGFR/ALK status + tumor board minutes
-
-That's **3 completely different applications** for the same drug + diagnosis. A static form either shows everything (unusable) or shows nothing (useless). Generative UI renders **exactly the right form** for each case.
-
-**14 hours/week of physician time saved. $35B/year in admin costs eliminated.**
-
+| Agent | **LangGraph** | Multi-node agent pipeline orchestration |
+| LLM | **Google Gemini 2.0 Flash** | Clinical parsing + UI schema generation |
+| LLM Integration | LangChain Google GenAI | Gemini API wrapper |
