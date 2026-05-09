@@ -1,0 +1,314 @@
+{
+  "schemas": {
+    "bluecross_il__humira": {
+      "payer_id": "bluecross_il",
+      "drug_id": "humira",
+      "form_title": "Blue Cross Blue Shield IL — Humira (adalimumab) Prior Authorization",
+      "sections": [
+        {
+          "id": "patient_info",
+          "title": "Patient Information",
+          "icon": "user",
+          "fields": [
+            { "id": "patient_name", "label": "Patient Full Name", "type": "text", "required": true },
+            { "id": "patient_dob", "label": "Date of Birth", "type": "date", "required": true },
+            { "id": "patient_id", "label": "BCBS Member ID", "type": "text", "required": true },
+            { "id": "patient_gender", "label": "Gender", "type": "select", "options": ["Male", "Female", "Other"], "required": true },
+            { "id": "patient_weight", "label": "Weight (kg)", "type": "number", "required": false }
+          ]
+        },
+        {
+          "id": "prescriber_info",
+          "title": "Prescriber Information",
+          "icon": "stethoscope",
+          "fields": [
+            { "id": "prescriber_name", "label": "Prescriber Name", "type": "text", "required": true },
+            { "id": "prescriber_npi", "label": "NPI Number", "type": "text", "required": true },
+            { "id": "prescriber_specialty", "label": "Specialty", "type": "text", "required": true },
+            { "id": "prescriber_phone", "label": "Office Phone", "type": "tel", "required": true },
+            { "id": "prescriber_fax", "label": "Fax Number", "type": "tel", "required": true }
+          ]
+        },
+        {
+          "id": "diagnosis",
+          "title": "Clinical Diagnosis",
+          "icon": "clipboard",
+          "fields": [
+            { "id": "primary_diagnosis", "label": "Primary Diagnosis", "type": "select", "options": ["Crohn's Disease (K50.x)", "Ulcerative Colitis (K51.x)", "Rheumatoid Arthritis (M05.x)", "Plaque Psoriasis (L40.0)", "Ankylosing Spondylitis (M45.x)"], "required": true },
+            { "id": "icd10_code", "label": "ICD-10 Code", "type": "text", "required": true },
+            { "id": "disease_severity", "label": "Disease Severity", "type": "select", "options": ["Mild", "Moderate", "Severe"], "required": true },
+            { "id": "diagnosis_date", "label": "Date of Diagnosis", "type": "date", "required": true },
+            { "id": "cdai_score", "label": "CDAI Score (Crohn's only)", "type": "number", "required": false, "conditional": { "field": "primary_diagnosis", "contains": "Crohn" } }
+          ]
+        },
+        {
+          "id": "step_therapy",
+          "title": "Step Therapy — Prior Treatment History",
+          "icon": "list-checks",
+          "description": "BCBS IL requires documented failure of at least 2 conventional therapies before approving Humira.",
+          "fields": [
+            { "id": "methotrexate_tried", "label": "Methotrexate tried?", "type": "checkbox", "required": false },
+            { "id": "methotrexate_duration", "label": "Methotrexate duration (weeks)", "type": "number", "required": false, "conditional": { "field": "methotrexate_tried", "equals": true } },
+            { "id": "methotrexate_reason_stopped", "label": "Reason for discontinuation", "type": "select", "options": ["Inadequate response", "Intolerance/adverse effects", "Contraindicated"], "required": false, "conditional": { "field": "methotrexate_tried", "equals": true } },
+            { "id": "6mp_tried", "label": "6-MP (Mercaptopurine) tried?", "type": "checkbox", "required": false },
+            { "id": "6mp_duration", "label": "6-MP duration (weeks)", "type": "number", "required": false, "conditional": { "field": "6mp_tried", "equals": true } },
+            { "id": "6mp_reason_stopped", "label": "Reason for discontinuation", "type": "select", "options": ["Inadequate response", "Intolerance/adverse effects", "Contraindicated"], "required": false, "conditional": { "field": "6mp_tried", "equals": true } },
+            { "id": "azathioprine_tried", "label": "Azathioprine tried?", "type": "checkbox", "required": false },
+            { "id": "other_therapies", "label": "Other prior therapies (describe)", "type": "textarea", "required": false }
+          ]
+        },
+        {
+          "id": "clinical_criteria",
+          "title": "Clinical Criteria Checklist",
+          "icon": "check-circle",
+          "fields": [
+            { "id": "tb_test_negative", "label": "TB test negative (within 6 months)", "type": "checkbox", "required": true },
+            { "id": "tb_test_date", "label": "TB test date", "type": "date", "required": true },
+            { "id": "no_active_infections", "label": "No active serious infections", "type": "checkbox", "required": true },
+            { "id": "no_chf", "label": "No moderate-to-severe CHF (NYHA Class III/IV)", "type": "checkbox", "required": true },
+            { "id": "hepatitis_screened", "label": "Hepatitis B/C screening completed", "type": "checkbox", "required": true },
+            { "id": "immunizations_current", "label": "Immunizations up to date", "type": "checkbox", "required": false }
+          ]
+        },
+        {
+          "id": "dosing",
+          "title": "Requested Dosing",
+          "icon": "pill",
+          "fields": [
+            { "id": "dose", "label": "Dose", "type": "select", "options": ["160mg initial, then 80mg at week 2, then 40mg every 2 weeks (Crohn's)", "40mg every other week (RA)", "80mg initial, then 40mg every 2 weeks (Psoriasis)"], "required": true },
+            { "id": "route", "label": "Route", "type": "select", "options": ["Subcutaneous injection"], "required": true },
+            { "id": "duration_requested", "label": "Duration Requested (months)", "type": "number", "required": true },
+            { "id": "pharmacy", "label": "Specialty Pharmacy", "type": "text", "required": true }
+          ]
+        }
+      ],
+      "required_documents": [
+        { "id": "lmn", "label": "Letter of Medical Necessity", "description": "Signed by prescribing physician", "required": true },
+        { "id": "clinical_notes", "label": "Office Visit Notes (last 3 months)", "description": "Supporting the diagnosis and severity", "required": true },
+        { "id": "step_therapy_proof", "label": "Step Therapy Documentation", "description": "Pharmacy records or clinical notes proving prior therapy failures", "required": true },
+        { "id": "endoscopy_report", "label": "Endoscopy / Colonoscopy Report", "description": "For Crohn's Disease diagnosis confirmation", "required": false }
+      ],
+      "approval_criteria_summary": "BCBS IL approves Humira for Crohn's when: diagnosis confirmed by endoscopy, moderate-to-severe severity (CDAI > 220), documented failure of at least one immunomodulator (methotrexate or 6-MP), and all safety labs are clear.",
+      "typical_decision_days": 3
+    },
+
+    "aetna__humira": {
+      "payer_id": "aetna",
+      "drug_id": "humira",
+      "form_title": "Aetna — Humira (adalimumab) Prior Authorization Request",
+      "sections": [
+        {
+          "id": "patient_info",
+          "title": "Patient Demographics",
+          "icon": "user",
+          "fields": [
+            { "id": "patient_name", "label": "Patient Full Name", "type": "text", "required": true },
+            { "id": "patient_dob", "label": "Date of Birth", "type": "date", "required": true },
+            { "id": "aetna_member_id", "label": "Aetna Member ID", "type": "text", "required": true },
+            { "id": "patient_gender", "label": "Biological Sex", "type": "select", "options": ["Male", "Female", "Other/Intersex"], "required": true },
+            { "id": "patient_address", "label": "Patient Address", "type": "text", "required": true },
+            { "id": "patient_phone", "label": "Patient Phone", "type": "tel", "required": true }
+          ]
+        },
+        {
+          "id": "prescriber_info",
+          "title": "Requesting Provider",
+          "icon": "stethoscope",
+          "fields": [
+            { "id": "prescriber_name", "label": "Prescriber Name", "type": "text", "required": true },
+            { "id": "prescriber_npi", "label": "NPI Number", "type": "text", "required": true },
+            { "id": "prescriber_specialty", "label": "Board-Certified Specialty", "type": "select", "options": ["Gastroenterology", "Rheumatology", "Dermatology", "Internal Medicine", "Other"], "required": true },
+            { "id": "prescriber_board_cert", "label": "Board Certification Number", "type": "text", "required": true },
+            { "id": "prescriber_phone", "label": "Office Phone", "type": "tel", "required": true },
+            { "id": "prescriber_fax", "label": "Fax", "type": "tel", "required": true },
+            { "id": "group_npi", "label": "Group/Practice NPI", "type": "text", "required": true }
+          ]
+        },
+        {
+          "id": "diagnosis",
+          "title": "Diagnosis & Disease Activity",
+          "icon": "activity",
+          "fields": [
+            { "id": "primary_diagnosis", "label": "Diagnosis", "type": "select", "options": ["Crohn's Disease (K50.x)", "Ulcerative Colitis (K51.x)", "Rheumatoid Arthritis (M05.x)", "Plaque Psoriasis (L40.0)"], "required": true },
+            { "id": "icd10_code", "label": "ICD-10 Code", "type": "text", "required": true },
+            { "id": "disease_severity", "label": "Disease Severity Index", "type": "select", "options": ["Mild (CDAI < 150)", "Moderate (CDAI 150-220)", "Severe (CDAI > 220)"], "required": true },
+            { "id": "diagnosis_date", "label": "Initial Diagnosis Date", "type": "date", "required": true },
+            { "id": "lab_results_date", "label": "Most Recent Lab Results Date", "type": "date", "required": true },
+            { "id": "crp_level", "label": "CRP Level (mg/L)", "type": "number", "required": false },
+            { "id": "esr_level", "label": "ESR Level (mm/hr)", "type": "number", "required": false }
+          ]
+        },
+        {
+          "id": "gastro_attestation",
+          "title": "Gastroenterologist Clinical Attestation",
+          "icon": "file-signature",
+          "description": "Aetna REQUIRES a gastroenterologist or specialist attestation for all GI biologics. This section must be completed by the treating specialist.",
+          "fields": [
+            { "id": "gi_specialist_name", "label": "GI Specialist Name", "type": "text", "required": true },
+            { "id": "gi_specialist_npi", "label": "GI Specialist NPI", "type": "text", "required": true },
+            { "id": "gi_specialist_phone", "label": "GI Specialist Phone", "type": "tel", "required": true },
+            { "id": "clinical_assessment", "label": "Clinical Assessment & Rationale", "type": "textarea", "required": true, "placeholder": "Describe why Humira is medically necessary for this patient, including disease severity, treatment history, and expected outcomes..." },
+            { "id": "attestation_confirmed", "label": "I attest that the above information is accurate and complete to the best of my knowledge", "type": "checkbox", "required": true }
+          ]
+        },
+        {
+          "id": "step_therapy",
+          "title": "Prior Authorization History & Step Therapy",
+          "icon": "list-checks",
+          "description": "Aetna requires documented failure of conventional therapy AND provides a 6-month clinical notes review window.",
+          "fields": [
+            { "id": "methotrexate_tried", "label": "Methotrexate", "type": "checkbox" },
+            { "id": "methotrexate_start", "label": "Start Date", "type": "date", "conditional": { "field": "methotrexate_tried", "equals": true } },
+            { "id": "methotrexate_end", "label": "End Date", "type": "date", "conditional": { "field": "methotrexate_tried", "equals": true } },
+            { "id": "methotrexate_outcome", "label": "Outcome", "type": "select", "options": ["Inadequate response", "Intolerance", "Contraindicated", "Still on therapy"], "conditional": { "field": "methotrexate_tried", "equals": true } },
+            { "id": "6mp_tried", "label": "6-Mercaptopurine (6-MP)", "type": "checkbox" },
+            { "id": "6mp_start", "label": "Start Date", "type": "date", "conditional": { "field": "6mp_tried", "equals": true } },
+            { "id": "6mp_end", "label": "End Date", "type": "date", "conditional": { "field": "6mp_tried", "equals": true } },
+            { "id": "6mp_outcome", "label": "Outcome", "type": "select", "options": ["Inadequate response", "Intolerance", "Contraindicated"], "conditional": { "field": "6mp_tried", "equals": true } },
+            { "id": "biologics_naive", "label": "Patient is biologic-naive", "type": "checkbox" },
+            { "id": "prior_biologic", "label": "Prior biologic (if applicable)", "type": "text", "conditional": { "field": "biologics_naive", "equals": false } }
+          ]
+        },
+        {
+          "id": "safety",
+          "title": "Safety Screening (Required)",
+          "icon": "shield",
+          "fields": [
+            { "id": "tb_screening", "label": "Tuberculosis screening (IGRA or PPD)", "type": "select", "options": ["Negative", "Positive - being treated", "Not done - reason:"], "required": true },
+            { "id": "tb_date", "label": "TB Screening Date", "type": "date", "required": true },
+            { "id": "hepatitis_b", "label": "Hepatitis B surface antigen", "type": "select", "options": ["Negative", "Positive - hepatologist consult obtained"], "required": true },
+            { "id": "hepatitis_c", "label": "Hepatitis C antibody", "type": "select", "options": ["Negative", "Positive - being managed"], "required": true },
+            { "id": "cbc_wbc", "label": "WBC Count (K/μL)", "type": "number", "required": true },
+            { "id": "cbc_date", "label": "CBC Date", "type": "date", "required": true }
+          ]
+        }
+      ],
+      "required_documents": [
+        { "id": "lmn", "label": "Letter of Medical Necessity", "description": "From prescribing physician — must include ICD-10 code, severity, and rationale", "required": true },
+        { "id": "clinical_notes_6mo", "label": "Clinical Notes — Last 6 Months", "description": "Office visit notes documenting disease progression", "required": true },
+        { "id": "lab_results", "label": "Current Lab Results", "description": "CRP, ESR, CBC within last 90 days", "required": true },
+        { "id": "step_therapy_proof", "label": "Prior Therapy Documentation", "description": "Pharmacy claims or physician records showing prior therapy dates and outcomes", "required": true },
+        { "id": "gi_attestation_form", "label": "Aetna GI Specialist Attestation Form", "description": "Completed and signed by gastroenterologist", "required": true },
+        { "id": "endoscopy_report", "label": "Endoscopy Report", "description": "Confirming Crohn's Disease diagnosis", "required": true }
+      ],
+      "approval_criteria_summary": "Aetna approves Humira for Crohn's when: GI specialist attestation completed, moderate-to-severe disease confirmed by labs + endoscopy, documented failure of at least one conventional therapy, all safety screenings clear, and board-certified prescriber on file.",
+      "typical_decision_days": 5
+    },
+
+    "united__keytruda": {
+      "payer_id": "united",
+      "drug_id": "keytruda",
+      "form_title": "UnitedHealthcare — Keytruda (pembrolizumab) Oncology Prior Authorization",
+      "sections": [
+        {
+          "id": "patient_info",
+          "title": "Patient Information",
+          "icon": "user",
+          "fields": [
+            { "id": "patient_name", "label": "Patient Full Name", "type": "text", "required": true },
+            { "id": "patient_dob", "label": "Date of Birth", "type": "date", "required": true },
+            { "id": "uhc_member_id", "label": "UHC Member ID", "type": "text", "required": true },
+            { "id": "patient_gender", "label": "Gender", "type": "select", "options": ["Male", "Female", "Other"], "required": true },
+            { "id": "patient_weight", "label": "Weight (kg)", "type": "number", "required": true },
+            { "id": "patient_height", "label": "Height (cm)", "type": "number", "required": true },
+            { "id": "patient_bsa", "label": "Body Surface Area (m²)", "type": "number", "required": true }
+          ]
+        },
+        {
+          "id": "oncologist_info",
+          "title": "Treating Oncologist",
+          "icon": "stethoscope",
+          "fields": [
+            { "id": "oncologist_name", "label": "Oncologist Name", "type": "text", "required": true },
+            { "id": "oncologist_npi", "label": "NPI Number", "type": "text", "required": true },
+            { "id": "oncologist_specialty", "label": "Specialty", "type": "select", "options": ["Medical Oncology", "Thoracic Oncology", "Hematology/Oncology", "Radiation Oncology"], "required": true },
+            { "id": "treatment_facility", "label": "Treatment Facility Name", "type": "text", "required": true },
+            { "id": "facility_npi", "label": "Facility NPI", "type": "text", "required": true },
+            { "id": "oncologist_phone", "label": "Direct Phone", "type": "tel", "required": true }
+          ]
+        },
+        {
+          "id": "cancer_diagnosis",
+          "title": "Oncology Diagnosis & Staging",
+          "icon": "microscope",
+          "fields": [
+            { "id": "cancer_type", "label": "Cancer Type", "type": "select", "options": ["Non-Small Cell Lung Cancer (NSCLC)", "Melanoma", "Head and Neck Squamous Cell Carcinoma", "Classic Hodgkin Lymphoma", "Colorectal Cancer - MSI-H/dMMR", "Cervical Cancer", "Other"], "required": true },
+            { "id": "histology", "label": "Histologic Subtype", "type": "select", "options": ["Adenocarcinoma", "Squamous Cell Carcinoma", "Large Cell Carcinoma", "NOS", "Other"], "required": true },
+            { "id": "stage", "label": "Cancer Stage", "type": "select", "options": ["Stage I", "Stage II", "Stage IIIA", "Stage IIIB", "Stage IIIC", "Stage IV"], "required": true },
+            { "id": "diagnosis_date", "label": "Diagnosis Date", "type": "date", "required": true },
+            { "id": "metastatic_sites", "label": "Metastatic Sites (if Stage IV)", "type": "text", "required": false },
+            { "id": "treatment_line", "label": "Line of Therapy", "type": "select", "options": ["First-line", "Second-line", "Third-line or beyond"], "required": true }
+          ]
+        },
+        {
+          "id": "biomarker_testing",
+          "title": "Biomarker & Genomic Testing Results",
+          "icon": "dna",
+          "description": "UnitedHealthcare REQUIRES comprehensive biomarker testing results before approving Keytruda for NSCLC.",
+          "fields": [
+            { "id": "pdl1_tested", "label": "PD-L1 expression tested?", "type": "checkbox", "required": true },
+            { "id": "pdl1_tps", "label": "PD-L1 TPS Score (%)", "type": "number", "required": true },
+            { "id": "pdl1_assay", "label": "Assay Used", "type": "select", "options": ["22C3 PharmDx (Dako)", "SP142", "SP263", "28-8 PharmDx", "Other"], "required": true },
+            { "id": "pdl1_lab", "label": "Testing Laboratory", "type": "text", "required": true },
+            { "id": "pdl1_date", "label": "Test Date", "type": "date", "required": true },
+            { "id": "egfr_status", "label": "EGFR Mutation Status", "type": "select", "options": ["Wild-type (negative)", "Exon 19 deletion", "Exon 21 L858R", "Other mutation", "Not tested"], "required": true },
+            { "id": "alk_status", "label": "ALK Rearrangement Status", "type": "select", "options": ["Negative", "Positive", "Not tested"], "required": true },
+            { "id": "ros1_status", "label": "ROS1 Status", "type": "select", "options": ["Negative", "Positive", "Not tested"], "required": false },
+            { "id": "kras_status", "label": "KRAS G12C Status", "type": "select", "options": ["Negative", "Positive - G12C", "Not tested"], "required": false },
+            { "id": "tmb_score", "label": "Tumor Mutational Burden (TMB)", "type": "number", "required": false, "placeholder": "mutations/Mb" },
+            { "id": "msi_status", "label": "MSI/MMR Status", "type": "select", "options": ["MSS/pMMR", "MSI-H/dMMR", "Not tested"], "required": false },
+            { "id": "ngs_report_attached", "label": "NGS/Foundation Medicine report attached", "type": "checkbox", "required": false }
+          ]
+        },
+        {
+          "id": "performance_status",
+          "title": "Patient Performance Status",
+          "icon": "activity",
+          "fields": [
+            { "id": "ecog_status", "label": "ECOG Performance Status", "type": "select", "options": ["0 — Fully active", "1 — Restricted but ambulatory", "2 — Ambulatory, self-care only", "3 — Limited self-care", "4 — Completely disabled"], "required": true },
+            { "id": "karnofsky_score", "label": "Karnofsky Performance Score", "type": "number", "required": false },
+            { "id": "brain_mets", "label": "Brain metastases present?", "type": "select", "options": ["No", "Yes - treated, stable", "Yes - untreated"], "required": true },
+            { "id": "autoimmune_disease", "label": "Active autoimmune disease?", "type": "select", "options": ["No", "Yes - specify below"], "required": true },
+            { "id": "autoimmune_details", "label": "Autoimmune disease details", "type": "text", "conditional": { "field": "autoimmune_disease", "equals": "Yes - specify below" } },
+            { "id": "systemic_steroids", "label": "On systemic steroids > 10mg prednisone/day?", "type": "select", "options": ["No", "Yes"], "required": true }
+          ]
+        },
+        {
+          "id": "tumor_board",
+          "title": "Tumor Board Review",
+          "icon": "users",
+          "description": "UnitedHealthcare REQUIRES tumor board review documentation for Keytruda authorization.",
+          "fields": [
+            { "id": "tumor_board_reviewed", "label": "Case reviewed by multidisciplinary tumor board?", "type": "checkbox", "required": true },
+            { "id": "tumor_board_date", "label": "Tumor Board Meeting Date", "type": "date", "required": true },
+            { "id": "tumor_board_recommendation", "label": "Tumor Board Recommendation", "type": "textarea", "required": true, "placeholder": "Summarize the tumor board's recommendation for Keytruda treatment..." },
+            { "id": "tumor_board_members", "label": "Participating Specialties", "type": "text", "required": false, "placeholder": "e.g., Medical Oncology, Thoracic Surgery, Radiation Oncology, Pathology" }
+          ]
+        },
+        {
+          "id": "dosing",
+          "title": "Treatment Regimen",
+          "icon": "pill",
+          "fields": [
+            { "id": "indication", "label": "Authorization Indication", "type": "select", "options": ["NSCLC - First-line monotherapy (PD-L1 >= 50%)", "NSCLC - First-line + chemo (PD-L1 >= 1%)", "NSCLC - Second-line (PD-L1 >= 1%)", "Melanoma - Adjuvant", "Melanoma - Unresectable/metastatic", "Other (specify)"], "required": true },
+            { "id": "dose_regimen", "label": "Dose/Schedule", "type": "select", "options": ["200mg IV every 3 weeks", "400mg IV every 6 weeks", "2mg/kg IV every 3 weeks (pediatric)"], "required": true },
+            { "id": "combination_therapy", "label": "Combination chemotherapy?", "type": "select", "options": ["Keytruda monotherapy", "Keytruda + carboplatin/pemetrexed", "Keytruda + carboplatin/paclitaxel", "Keytruda + other (specify)"], "required": true },
+            { "id": "cycles_requested", "label": "Number of cycles requested", "type": "number", "required": true },
+            { "id": "infusion_site", "label": "Infusion Site", "type": "text", "required": true }
+          ]
+        }
+      ],
+      "required_documents": [
+        { "id": "pathology_report", "label": "Pathology Report", "description": "Histologically confirmed diagnosis with tumor specimen details", "required": true },
+        { "id": "pdl1_report", "label": "PD-L1 Testing Report", "description": "22C3 assay results from CAP-accredited lab", "required": true },
+        { "id": "ngs_molecular_report", "label": "Molecular/NGS Testing Report", "description": "EGFR, ALK, ROS1, KRAS results", "required": true },
+        { "id": "tumor_board_minutes", "label": "Tumor Board Meeting Notes", "description": "Minutes or summary from MDT meeting recommending Keytruda", "required": true },
+        { "id": "radiology_report", "label": "Staging Radiology Reports", "description": "CT, PET-CT, or MRI confirming stage", "required": true },
+        { "id": "ecog_documentation", "label": "Performance Status Documentation", "description": "ECOG assessment in clinical notes", "required": true }
+      ],
+      "approval_criteria_summary": "UnitedHealthcare approves Keytruda for NSCLC when: PD-L1 TPS >= 1% (combination) or >= 50% (monotherapy), EGFR/ALK/ROS1 negative, ECOG 0-2, tumor board review documented, pathology confirmed, and stage III/IV disease.",
+      "typical_decision_days": 7
+    }
+  }
+}
+

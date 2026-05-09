@@ -1,0 +1,136 @@
+{
+  "drugs": [
+    {
+      "id": "humira",
+      "name": "Humira",
+      "generic": "adalimumab",
+      "manufacturer": "AbbVie",
+      "drug_class": "TNF inhibitor / Biologic",
+      "indications": ["Crohn's Disease", "Rheumatoid Arthritis", "Plaque Psoriasis", "Ulcerative Colitis", "Ankylosing Spondylitis"],
+      "formulary_tier": 4,
+      "specialty_pharmacy_required": true,
+      "rems_program": false,
+      "step_therapy": {
+        "required_prior_therapies": ["methotrexate", "6-MP (mercaptopurine)", "azathioprine"],
+        "min_therapy_duration_weeks": 12,
+        "documented_failure_required": true
+      },
+      "clinical_criteria": {
+        "crohns_disease": {
+          "diagnosis_confirmed": "Endoscopy or imaging confirming Crohn's Disease",
+          "severity": "Moderate to severe (CDAI > 220 or HBI > 7)",
+          "prior_therapy_failures": ["conventional immunomodulators"],
+          "contraindications_checked": ["active TB", "serious infections", "CHF"]
+        },
+        "rheumatoid_arthritis": {
+          "diagnosis_confirmed": "RF or anti-CCP positive, or clinical diagnosis",
+          "prior_therapy_failures": ["methotrexate (min 3 months)"],
+          "contraindications_checked": ["active TB", "serious infections"]
+        }
+      },
+      "average_cost_monthly": 5800
+    },
+    {
+      "id": "keytruda",
+      "name": "Keytruda",
+      "generic": "pembrolizumab",
+      "manufacturer": "Merck",
+      "drug_class": "PD-1 inhibitor / Immunotherapy",
+      "indications": ["Non-Small Cell Lung Cancer", "Melanoma", "Head and Neck Cancer", "Colorectal Cancer", "Cervical Cancer"],
+      "formulary_tier": 4,
+      "specialty_pharmacy_required": true,
+      "rems_program": false,
+      "step_therapy": {
+        "required_prior_therapies": [],
+        "min_therapy_duration_weeks": 0,
+        "documented_failure_required": false
+      },
+      "clinical_criteria": {
+        "nsclc": {
+          "diagnosis_confirmed": "Histologically confirmed NSCLC",
+          "pdl1_expression": "PD-L1 TPS >= 1% (first-line) or >= 50% (monotherapy)",
+          "staging": "Stage III unresectable or Stage IV",
+          "egfr_alk_testing": "EGFR/ALK negative required for first-line monotherapy",
+          "ecog_status": "ECOG 0-2",
+          "tumor_board_review": "Tumor board review documentation required"
+        }
+      },
+      "average_cost_monthly": 15200
+    },
+    {
+      "id": "ozempic",
+      "name": "Ozempic",
+      "generic": "semaglutide",
+      "manufacturer": "Novo Nordisk",
+      "drug_class": "GLP-1 receptor agonist",
+      "indications": ["Type 2 Diabetes", "Cardiovascular Risk Reduction"],
+      "formulary_tier": 3,
+      "specialty_pharmacy_required": false,
+      "rems_program": false,
+      "step_therapy": {
+        "required_prior_therapies": ["metformin"],
+        "min_therapy_duration_weeks": 12,
+        "documented_failure_required": true
+      },
+      "clinical_criteria": {
+        "type2_diabetes": {
+          "diagnosis_confirmed": "HbA1c >= 7.0% on current therapy",
+          "prior_therapy": "Metformin unless contraindicated",
+          "bmi_documented": "BMI documented",
+          "cardiovascular_risk": "CV risk assessment completed"
+        }
+      },
+      "average_cost_monthly": 900
+    },
+    {
+      "id": "dupixent",
+      "name": "Dupixent",
+      "generic": "dupilumab",
+      "manufacturer": "Sanofi/Regeneron",
+      "drug_class": "IL-4/IL-13 antagonist / Biologic",
+      "indications": ["Atopic Dermatitis", "Asthma", "Chronic Rhinosinusitis with Nasal Polyps", "Eosinophilic Esophagitis"],
+      "formulary_tier": 4,
+      "specialty_pharmacy_required": true,
+      "rems_program": false,
+      "step_therapy": {
+        "required_prior_therapies": ["topical corticosteroids", "topical calcineurin inhibitors"],
+        "min_therapy_duration_weeks": 16,
+        "documented_failure_required": true
+      },
+      "clinical_criteria": {
+        "atopic_dermatitis": {
+          "diagnosis_confirmed": "Moderate-to-severe atopic dermatitis (IGA >= 3 or EASI >= 16)",
+          "prior_therapy_failures": ["TCS", "TCI (tacrolimus/pimecrolimus)"],
+          "age_requirement": ">= 6 months old"
+        }
+      },
+      "average_cost_monthly": 3500
+    },
+    {
+      "id": "enbrel",
+      "name": "Enbrel",
+      "generic": "etanercept",
+      "manufacturer": "Pfizer/Amgen",
+      "drug_class": "TNF inhibitor / Biologic",
+      "indications": ["Rheumatoid Arthritis", "Psoriatic Arthritis", "Ankylosing Spondylitis", "Plaque Psoriasis"],
+      "formulary_tier": 4,
+      "specialty_pharmacy_required": true,
+      "rems_program": false,
+      "step_therapy": {
+        "required_prior_therapies": ["methotrexate", "sulfasalazine", "hydroxychloroquine"],
+        "min_therapy_duration_weeks": 12,
+        "documented_failure_required": true
+      },
+      "clinical_criteria": {
+        "rheumatoid_arthritis": {
+          "diagnosis_confirmed": "RF or anti-CCP positive",
+          "disease_activity": "Moderate to severe RA (DAS28 > 3.2)",
+          "prior_therapy_failures": ["methotrexate (min 3 months)"],
+          "contraindications_checked": ["active TB", "serious infections", "demyelinating disease"]
+        }
+      },
+      "average_cost_monthly": 5200
+    }
+  ]
+}
+

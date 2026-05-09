@@ -1,0 +1,91 @@
+{
+  "payers": [
+    {
+      "id": "bluecross_il",
+      "name": "Blue Cross Blue Shield of Illinois",
+      "shortName": "BlueCross IL",
+      "phone": "1-800-892-2803",
+      "fax": "1-800-292-2910",
+      "portal": "https://www.bcbsil.com/provider",
+      "avg_processing_days": 3,
+      "pa_requirements": {
+        "general": [
+          "Completed PA request form",
+          "Letter of Medical Necessity (LMN)",
+          "Patient diagnosis codes (ICD-10)",
+          "Prescriber NPI and DEA number"
+        ],
+        "step_therapy_required": true,
+        "peer_to_peer_available": true,
+        "electronic_submission": true,
+        "appeal_window_days": 180
+      },
+      "formulary_tier_rules": {
+        "tier_3_requires_pa": true,
+        "tier_4_requires_pa": true,
+        "specialty_requires_pa": true
+      }
+    },
+    {
+      "id": "aetna",
+      "name": "Aetna",
+      "shortName": "Aetna",
+      "phone": "1-800-414-2386",
+      "fax": "1-859-455-8650",
+      "portal": "https://www.aetna.com/health-care-professionals",
+      "avg_processing_days": 5,
+      "pa_requirements": {
+        "general": [
+          "Aetna PA Request Form",
+          "Clinical notes (last 6 months)",
+          "Lab results supporting diagnosis",
+          "Gastroenterologist attestation (GI drugs)",
+          "Prescriber board certification",
+          "Pharmacy benefits verification"
+        ],
+        "step_therapy_required": true,
+        "peer_to_peer_available": true,
+        "electronic_submission": true,
+        "appeal_window_days": 60,
+        "gastro_attestation_required": true
+      },
+      "formulary_tier_rules": {
+        "tier_3_requires_pa": true,
+        "tier_4_requires_pa": true,
+        "specialty_requires_pa": true
+      }
+    },
+    {
+      "id": "united",
+      "name": "UnitedHealthcare",
+      "shortName": "UnitedHealth",
+      "phone": "1-866-889-8054",
+      "fax": "1-866-940-7677",
+      "portal": "https://www.uhcprovider.com",
+      "avg_processing_days": 7,
+      "pa_requirements": {
+        "general": [
+          "UnitedHealthcare PA Form",
+          "Pathology/radiology reports",
+          "ECOG performance status",
+          "Tumor board approval documentation",
+          "Biomarker/genomic test results",
+          "Oncologist attestation"
+        ],
+        "step_therapy_required": false,
+        "peer_to_peer_available": true,
+        "electronic_submission": true,
+        "appeal_window_days": 90,
+        "tumor_board_required": true,
+        "biomarker_testing_required": true
+      },
+      "formulary_tier_rules": {
+        "tier_3_requires_pa": true,
+        "tier_4_requires_pa": true,
+        "specialty_requires_pa": true,
+        "oncology_requires_pa": true
+      }
+    }
+  ]
+}
+

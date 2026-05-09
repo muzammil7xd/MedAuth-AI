@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment
+.env
+*.env.local
+
+# Node
+node_modules/
+dist/
+.next/
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Vite build output
+frontend/dist/
+
+# Python cache
+backend/__pycache__/
+backend/agent/__pycache__/
+backend/routes/__pycache__/
+backend/mcp_servers/__pycache__/
+
